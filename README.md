@@ -1123,19 +1123,8 @@ describe('Model API Integration', () => {
 });
 ```
 
-### 🎭 **Test End-to-End**
 
-```bash
-# Avvia server di test
-npm run test:e2e:setup
-
-# Esegui test E2E
-npm run test:e2e
-
-# Test E2E con UI
-npm run test:e2e:ui
 ```
-
 ### 📊 **Coverage Report**
 
 ```bash
@@ -1146,46 +1135,18 @@ npm run test:coverage
 npm run test:coverage:open
 ```
 
-**Target Coverage**:
-- **Statements**: ≥ 90%
-- **Branches**: ≥ 85%
-- **Functions**: ≥ 90%
-- **Lines**: ≥ 90%
 
-### ⚡ **Performance Testing**
-
-```bash
-# Test performance A*
-npm run test:performance:astar
-
-# Load testing API
-npm run test:load
-
-# Memory leak testing
-npm run test:memory
-```
 
 ---
 
-## 🤝 Contribuzione
 
 ### 📋 **Linee Guida**
 
-1. **🍴 Fork del Repository**
-   ```bash
-   git clone https://github.com/your-username/Progetto_crown-sourcing.git
-   cd Progetto_crown-sourcing
-   git remote add upstream https://github.com/original/Progetto_crown-sourcing.git
+
+
    ```
 
-2. **🌿 Crea un Branch**
-   ```bash
-   git checkout -b feature/nome-feature
-   # oppure
-   git checkout -b fix/nome-bug
-   ```
-
-3. **💻 Sviluppa e Testa**
+**💻 Sviluppa e Testa**
    ```bash
    # Installa dipendenze
    npm install
@@ -1198,30 +1159,9 @@ npm run test:memory
    npm run lint
    ```
 
-4. **📝 Commit con Conventional Commits**
-   ```bash
-   git commit -m "feat: add new A* optimization algorithm"
-   git commit -m "fix: resolve token calculation bug"
-   git commit -m "docs: update API documentation"
-   ```
 
-5. **🚀 Push e Pull Request**
-   ```bash
-   git push origin feature/nome-feature
-   # Crea PR su GitHub
-   ```
 
-### 🎯 **Tipi di Contribuzione**
 
-| Tipo | Descrizione | Label |
-|------|-------------|-------|
-| 🐛 **Bug Fix** | Correzione errori | `bug` |
-| ✨ **Feature** | Nuove funzionalità | `enhancement` |
-| 📚 **Documentation** | Miglioramenti docs | `documentation` |
-| 🎨 **Style** | Miglioramenti UI/UX | `design` |
-| ⚡ **Performance** | Ottimizzazioni | `performance` |
-| 🧪 **Testing** | Aggiunta test | `testing` |
-| 🔧 **Refactoring** | Ristrutturazione codice | `refactor` |
 
 ### 📏 **Standard di Codice**
 
@@ -1239,15 +1179,6 @@ npm run format        # Prettier format
 npm run type-check    # TypeScript check
 ```
 
-### 🔍 **Code Review Checklist**
-
-- [ ] ✅ Codice segue gli standard del progetto
-- [ ] 🧪 Test unitari e integrazione aggiunti
-- [ ] 📚 Documentazione aggiornata
-- [ ] 🔒 Controlli di sicurezza implementati
-- [ ] ⚡ Performance considerate
-- [ ] 🌐 Compatibilità cross-platform
-- [ ] 📱 Responsive design (se applicabile)
 
 ---
 
@@ -1279,44 +1210,12 @@ SOFTWARE.
 
 ---
 
-## 📞 Contatti e Supporto
+
 
 ### 👥 **Team di Sviluppo**
 
 | Ruolo | Nome | Email | GitHub |
 |-------|------|-------|--------|
-| **Project Lead** | [Nome] | lead@crownsourcing.dev | [@username](https://github.com/username) |
-| **Backend Developer** | [Nome] | backend@crownsourcing.dev | [@username](https://github.com/username) |
-| **DevOps Engineer** | [Nome] | devops@crownsourcing.dev | [@username](https://github.com/username) |
 
-### 🆘 **Supporto**
+| **Backend Developer** | [Emanuel Hoxha] | emanuel5@live.it | [@HoxhaEmanuel](https://github.com/HoxhaEmanuel) |
 
-- **🐛 Bug Reports**: [GitHub Issues](https://github.com/project/issues/new?template=bug_report.md)
-- **💡 Feature Requests**: [GitHub Issues](https://github.com/project/issues/new?template=feature_request.md)
-- **❓ Domande**: [GitHub Discussions](https://github.com/project/discussions)
-- **📧 Email**: support@crownsourcing.dev
-- **💬 Discord**: [Crown-Sourcing Community](https://discord.gg/crownsourcing)
-
-### 🔗 **Link Utili**
-
-- **📖 Documentazione**: [docs.crownsourcing.dev](https://docs.crownsourcing.dev)
-- **🚀 Demo Live**: [demo.crownsourcing.dev](https://demo.crownsourcing.dev)
-- **📊 Status Page**: [status.crownsourcing.dev](https://status.crownsourcing.dev)
-- **🎯 Roadmap**: [GitHub Projects](https://github.com/project/projects)
-- **📈 Analytics**: [analytics.crownsourcing.dev](https://analytics.crownsourcing.dev)
-
-### 🌟 **Riconoscimenti**
-
-Grazie a tutti i contributori che hanno reso possibile questo progetto:
-
-[![Contributors](https://contrib.rocks/image?repo=project/crown-sourcing)](https://github.com/project/crown-sourcing/graphs/contributors)
-
-### 📊 **Statistiche Progetto**
-
-![GitHub stars](https://img.shields.io/github/stars/project/crown-sourcing?style=social)
-![GitHub forks](https://img.shields.io/github/forks/project/crown-sourcing?style=social)
-![GitHub issues](https://img.shields.io/github/issues/project/crown-sourcing)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/project/crown-sourcing)
-![GitHub last commit](https://img.shields.io/github/last-commit/project/crown-sourcing)
-
----
