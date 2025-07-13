@@ -169,6 +169,439 @@ graph TB
 
 ## 📊 Diagrammi UML
 
+### 🏗️ Diagramma delle Classi - Modelli Sequelize
+
+```mermaid
+classDiagram
+    %% === SEQUELIZE MODELS ===
+    class Model {
+        <<abstract>>
+        +id: number
+        +createdAt: Date
+        +updatedAt: Date
+        +save()
+        +destroy()
+        +reload()
+    }
+    
+    class Utente {
+        +id: number
+        +email: string
+        +password: string
+        +ruolo: 'user' | 'admin'
+        +token_rimanenti: number
+        +createdAt: Date
+        +updatedAt: Date
+    }
+    
+    class Modello {
+        +id: number
+        +nome: string
+        +griglia: number[][]
+        +dimensioni_x: number
+        +dimensioni_y: number
+        +costo_creazione: number
+        +creatore_id: number
+        +createdAt: Date
+        +updatedAt: Date
+    }
+    
+    class RichiestaAggiornamento {
+        +id: number
+        +stato: 'pending' | 'approved' | 'rejected'
+        +costo_totale: number
+        +modello_id: number
+        +richiedente_id: number
+        +modello?: Modello
+        +celle?: CellaAggiornamento[]
+        +createdAt: Date
+        +updatedAt: Date
+    }
+    
+    class CellaAggiornamento {
+        +id: number
+        +x: number
+        +y: number
+        +nuovo_valore: 0 | 1
+        +richiesta_id: number
+    }
+    
+    %% === INTERFACES ===
+    class UtenteAttributes {
+        <<interface>>
+        +id: number
+        +email: string
+        +password: string
+        +ruolo: 'user' | 'admin'
+        +token_rimanenti: number
+    }
+    
+    class ModelloAttributes {
+        <<interface>>
+        +id: number
+        +nome: string
+        +griglia: number[][]
+        +dimensioni_y: number
+        +dimensioni_x: number
+        +costo_creazione: number
+        +creatore_id: number
+    }
+    
+    class RichiestaAggiornamentoAttributes {
+        <<interface>>
+        +id: number
+        +stato: 'pending' | 'approved' | 'rejected'
+        +costo_totale: number
+        +modello_id: number
+        +richiedente_id: number
+    }
+    
+    class CellaAggiornamentoAttributes {
+        <<interface>>
+        +id: number
+        +x: number
+        +y: number
+        +nuovo_valore: 0 | 1
+        +richiesta_id: number
+    }
+    
+    %% === INHERITANCE ===
+    Model <|-- Utente
+    Model <|-- Modello
+    Model <|-- RichiestaAggiornamento
+    Model <|-- CellaAggiornamento
+    
+    %% === INTERFACE IMPLEMENTATION ===
+    Utente ..|> UtenteAttributes
+    Modello ..|> ModelloAttributes
+    RichiestaAggiornamento ..|> RichiestaAggiornamentoAttributes
+    CellaAggiornamento ..|> CellaAggiornamentoAttributes
+    
+    %% === ASSOCIATIONS ===
+    Utente ||--o{ Modello : "crea"
+    Utente ||--o{ RichiestaAggiornamento : "richiede"
+    Modello ||--o{ RichiestaAggiornamento : "riceve"
+    RichiestaAggiornamento ||--o{ CellaAggiornamento : "contiene"
+```
+
+### 🏗️ Diagramma delle Classi - Layer DAO
+
+```mermaid
+classDiagram
+    %% === DAO CLASSES ===
+    class UtenteDao {
+        +findById(id: number) Promise~Utente~
+        +findByEmail(email: string) Promise~Utente~
+        +create(userData: object) Promise~Utente~
+        +update(userId: number, updateData: object) Promise~number[]~
+        +updateTokens(userId: number, newTokenAmount: number) Promise~number[]~
+        +findAllWithPagination(limit: number, offset: number) Promise~object~
+        +deductTokensAndGetBalance(id: number, amount: number) Promise~number~
+        +updateTokensAndGetBalance(userId: number, newBalance: number) Promise~number~
+        +getTotalTokensInSystem() Promise~number~
+        +hasEnoughTokens(userId: number, requiredTokens: number) Promise~boolean~
+        +count() Promise~number~
+        +findMultipleByIds(userIds: number[]) Promise~Utente[]~
+        +checkMultipleUsersTokens(checks: object[]) Promise~object[]~
+        +bulkUpdateTokens(updates: object[]) Promise~void~
+    }
+    
+    class ModelloDao {
+        +findById(id: number) Promise~Modello~
+        +findByCreatorId(creatorId: number) Promise~Modello[]~
+        +findByCreatorIdPaginated(creatorId: number, limit: number, offset: number) Promise~object~
+        +create(modelData: object) Promise~Modello~
+        +update(modelId: number, updateData: object) Promise~number[]~
+        +updateGrid(modelId: number, newGrid: number[][]) Promise~number[]~
+        +getGrid(modelId: number) Promise~number[][]~
+        +findAllPaginated(limit: number, offset: number) Promise~object~
+        +delete(id: number) Promise~boolean~
+        +count() Promise~number~
+        +findAndCountAll(options: object) Promise~object~
+        +findMultipleByIds(ids: number[]) Promise~Modello[]~
+        +checkMultipleOwnership(modelIds: number[], userId: number) Promise~Map~
+        +isCreator(modelId: number, userId: number) Promise~boolean~
+        +getModelInfo(modelId: number) Promise~object~
+        +getModelStatusInfo(modelId: number) Promise~object~
+        +getDimensions(modelId: number) Promise~object~
+        +areCoordinatesValid(modelId: number, x: number, y: number) Promise~boolean~
+    }
+    
+    class RichiestaAggiornamentoDao {
+        +findById(id: number) Promise~RichiestaAggiornamento~
+        +findByIdWithRelations(id: number) Promise~RichiestaAggiornamento~
+        +findPendingByCreatorId(creatorId: number) Promise~RichiestaAggiornamento[]~
+        +findPendingByCreatorIdPaginated(creatorId: number, limit: number, offset: number) Promise~object~
+        +create(requestData: object) Promise~RichiestaAggiornamento~
+        +update(requestId: number, updateData: object) Promise~number[]~
+        +updateStatus(id: number, status: string) Promise~RichiestaAggiornamento~
+        +bulkUpdateStatus(updates: object[]) Promise~void~
+        +findByModelIdWithFiltersPaginated(modelId: number, filters: object, limit: number, offset: number) Promise~object~
+        +findMultipleByIdsWithRelations(ids: number[]) Promise~RichiestaAggiornamento[]~
+        +countByStatus(status: string) Promise~number~
+        +countPendingByModelId(modelId: number) Promise~number~
+        +count() Promise~number~
+        +isPending(requestId: number) Promise~boolean~
+        +getStats() Promise~object~
+    }
+    
+    class CellaAggiornamentoDao {
+        +findById(id: number) Promise~CellaAggiornamento~
+        +create(cellData: object) Promise~CellaAggiornamento~
+        +bulkCreate(cellsData: object[]) Promise~CellaAggiornamento[]~
+        +findByRequestId(requestId: number) Promise~CellaAggiornamento[]~
+        +countByRequestId(requestId: number) Promise~number~
+        +existsByCoordinatesAndRequest(requestId: number, x: number, y: number) Promise~boolean~
+        +bulkUpdate(updates: object[]) Promise~void~
+        +delete(id: number) Promise~boolean~
+    }
+    
+    %% === INTERFACES ===
+    class TotalTokensResult {
+        <<interface>>
+        +total_tokens: string | number | null
+    }
+    
+    class UpdateFilters {
+        <<interface>>
+        +stato?: 'pending' | 'approved' | 'rejected'
+        +dataInizio?: Date
+        +dataFine?: Date
+    }
+    
+    %% === DEPENDENCIES ===
+    UtenteDao --> Utente : "manages"
+    ModelloDao --> Modello : "manages"
+    RichiestaAggiornamentoDao --> RichiestaAggiornamento : "manages"
+    RichiestaAggiornamentoDao --> Modello : "includes"
+    RichiestaAggiornamentoDao --> CellaAggiornamento : "includes"
+    CellaAggiornamentoDao --> CellaAggiornamento : "manages"
+    
+    UtenteDao ..> TotalTokensResult : "returns"
+    RichiestaAggiornamentoDao ..> UpdateFilters : "uses"
+    
+    %% === DATABASE CONNECTION ===
+    UtenteDao --> Database : "uses"
+    ModelloDao --> Database : "uses"
+    RichiestaAggiornamentoDao --> Database : "uses"
+    CellaAggiornamentoDao --> Database : "uses"
+```
+
+### 🏗️ Diagramma delle Classi - Controllers e Middleware
+
+```mermaid
+classDiagram
+    %% === REQUEST/RESPONSE INTERFACES ===
+    class Request {
+        <<interface>>
+        +body: object
+        +params: object
+        +query: object
+        +headers: object
+    }
+    
+    class Response {
+        <<interface>>
+        +status(code: number) Response
+        +json(data: object) Response
+        +send(data: any) Response
+    }
+    
+    class AuthenticatedRequest {
+        <<interface>>
+        +user?: object
+        +requiredTokens?: number
+        +modelId?: number
+        +requestId?: number
+        +userId?: number
+        +pagination?: object
+    }
+    
+    class ValidatedRequest {
+        <<interface>>
+        +modelId?: number
+        +requestId?: number
+    }
+    
+    %% === CONTROLLERS ===
+    class AuthController {
+        +register(req: Request, res: Response) Promise~void~
+        +login(req: Request, res: Response) Promise~void~
+    }
+    
+    class ModelController {
+        +createModel(req: AuthenticatedRequest, res: Response) Promise~void~
+        +executeModel(req: AuthenticatedRequest, res: Response) Promise~void~
+        +getModelStatus(req: AuthenticatedRequest, res: Response) Promise~void~
+        +getUserModels(req: AuthenticatedRequest, res: Response) Promise~void~
+    }
+    
+    class UpdateController {
+        +requestCellUpdate(req: AuthenticatedRequest, res: Response) Promise~void~
+        +approveRejectRequests(req: AuthenticatedRequest, res: Response) Promise~void~
+        +getPendingRequests(req: AuthenticatedRequest, res: Response) Promise~void~
+        +getModelUpdates(req: AuthenticatedRequest, res: Response) Promise~void~
+    }
+    
+    class AdminController {
+        +getAllUsers(req: AuthenticatedRequest, res: Response) Promise~void~
+        +addTokensToUser(req: AuthenticatedRequest, res: Response) Promise~void~
+        +getSystemStats(req: AuthenticatedRequest, res: Response) Promise~void~
+        +deleteUser(req: AuthenticatedRequest, res: Response) Promise~void~
+    }
+    
+    %% === MIDDLEWARE ===
+    class AuthMiddleware {
+        +authenticateToken(req: AuthenticatedRequest, res: Response, next: Function) Promise~void~
+        +requireAdmin(req: AuthenticatedRequest, res: Response, next: Function) Promise~void~
+        +requireTokens(requiredTokens: number) Function
+    }
+    
+    class ValidationMiddleware {
+        +validateEmailPassword(req: Request, res: Response, next: Function) void
+        +validateRequiredFields(fields: string[]) Function
+        +validateModelGrid(req: Request, res: Response, next: Function) void
+        +validateRechargeRequest(req: Request, res: Response, next: Function) void
+    }
+    
+    class ValidateIdMiddleware {
+        +validateModelId(req: ValidatedRequest, res: Response, next: Function) void
+        +validateAndCheckModelExists(req: ValidatedRequest, res: Response, next: Function) Promise~void~
+        +validateRequestId(req: ValidatedRequest, res: Response, next: Function) void
+        +validateIdArray(fieldName: string) Function
+        +validatePagination(req: ValidatedRequest, res: Response, next: Function) void
+    }
+    
+    class ErrorHandlerMiddleware {
+        +errorHandler(err: Error, req: Request, res: Response, next: Function) void
+    }
+    
+    %% === INHERITANCE ===
+    Request <|-- AuthenticatedRequest
+    AuthenticatedRequest <|-- ValidatedRequest
+    
+    %% === DEPENDENCIES ===
+    AuthController --> UtenteDao : "uses"
+    ModelController --> ModelloDao : "uses"
+    ModelController --> UtenteDao : "uses"
+    UpdateController --> RichiestaAggiornamentoDao : "uses"
+    UpdateController --> CellaAggiornamentoDao : "uses"
+    UpdateController --> ModelloDao : "uses"
+    AdminController --> UtenteDao : "uses"
+    AdminController --> ModelloDao : "uses"
+    
+    AuthMiddleware --> UtenteDao : "uses"
+    ValidateIdMiddleware --> ModelloDao : "uses"
+```
+
+### 🏗️ Diagramma delle Classi - Utilities e Error Handling
+
+```mermaid
+classDiagram
+    %% === ERROR CLASSES ===
+    class Error {
+        <<built-in>>
+        +message: string
+        +name: string
+        +stack?: string
+    }
+    
+    class AppError {
+        +message: string
+        +statusCode: number
+        +type: ErrorTypes
+        +isOperational: boolean
+        +constructor(message: string, statusCode: number, type: ErrorTypes)
+    }
+    
+    class ErrorTypes {
+        <<enumeration>>
+        BadRequest
+        Unauthorized
+        Forbidden
+        NotFound
+        Conflict
+        UnprocessableEntity
+        InternalServerError
+        InsufficientTokens
+        ValidationError
+    }
+    
+    class ErrorFactory {
+        +createError(type: ErrorTypes, message: string, customStatusCode?: number) AppError
+        +createValidationError(field: string, value: unknown, constraint: string) AppError
+        +createInsufficientTokensError(required: number, available: number) AppError
+        +createUnauthorizedError(reason?: string) AppError
+        +createNotFoundError(resource: string, identifier?: string | number) AppError
+        -getStatusCodeForType(type: ErrorTypes) number
+    }
+    
+    %% === UTILITY CLASSES ===
+    class Database {
+        -static instance: Database
+        -sequelize: Sequelize
+        +static getInstance() Database
+        +getSequelize() Sequelize
+        +authenticate() Promise~void~
+        +sync() Promise~void~
+    }
+    
+    class CoordinateValidator {
+        +static validateCoordinates(x: number, y: number, maxX: number, maxY: number) void
+        +static validatePathfindingCoordinates(start: Coordinate, goal: Coordinate, grid: number[][]) void
+        +static filterCellsWithDifferentValues(cells: CoordinateWithValue[], grid: number[][]) CoordinateWithValue[]
+    }
+    
+    class TokenUtils {
+        +static formatTokenBalance(balance: number | string) string
+        +static hasSufficientTokens(currentBalance: number, requiredTokens: number) boolean
+        +static calculateRemainingTokens(currentBalance: number, tokensToDeduct: number) number
+        +static calculateModelCreationCost(width: number, height: number) number
+        +static calculateUpdateCost(cellCount: number, isCreator?: boolean) number
+        +static calculateExecutionCost(modelCreationCost: number) number
+        +static validateTokenAmount(amount: number) boolean
+        +static parseTokenAmount(tokenString: string) number
+        +static formatTokensWithUnit(balance: number) string
+        +static calculateTokenUsagePercentage(used: number, total: number) number
+    }
+    
+    class TransactionWrapper {
+        +static withTransaction~T~(operation: Function, options?: TransactionOptions) Promise~T~
+    }
+    
+    %% === INTERFACES ===
+    class Coordinate {
+        <<interface>>
+        +x: number
+        +y: number
+    }
+    
+    class CoordinateWithValue {
+        <<interface>>
+        +x: number
+        +y: number
+        +nuovo_valore: number
+    }
+    
+    class TransactionOptions {
+        <<interface>>
+        +isolationLevel?: string
+        +readOnly?: boolean
+    }
+    
+    %% === INHERITANCE ===
+    Error <|-- AppError
+    
+    %% === DEPENDENCIES ===
+    ErrorFactory --> AppError : "creates"
+    ErrorFactory --> ErrorTypes : "uses"
+    AppError --> ErrorTypes : "uses"
+    
+    CoordinateValidator ..> Coordinate : "uses"
+    CoordinateValidator ..> CoordinateWithValue : "uses"
+    TransactionWrapper ..> TransactionOptions : "uses"
+```
+
 ### 🎭 Diagramma dei Casi d'Uso
 
 ```mermaid
@@ -235,42 +668,45 @@ graph LR
 
 ```mermaid
 sequenceDiagram
-    participant U as 🧑‍💻 Utente
-    participant API as 🌐 API Gateway
-    participant MC as 🗺️ Model Controller
-    participant DAO as 📊 Modello DAO
-    participant AStar as 🎯 A* Engine
-    participant DB as 🗄️ Database
+    participant U as Utente
+    participant API as API Gateway
+    participant MC as Model Controller
+    participant MDAO as Modello DAO
+    participant UDAO as Utente DAO
+    participant AStar as A* Engine
+    participant DB as Database
     
-    Note over U,DB: 📝 Fase 1: Creazione Modello
+    Note over U,DB: Fase 1: Creazione Modello
     
-    U->>+API: POST /api/models<br/>{nome, griglia}
+    U->>+API: POST /api/models
+    Note right of U: {nome, griglia}
     API->>+MC: createModel()
-    MC->>+DAO: create(modelData)
-    DAO->>+DB: INSERT modello
-    DB-->>-DAO: modello creato
-    DAO-->>-MC: nuovo modello
-    MC->>+DAO: deductTokensAndGetBalance()
-    DAO->>+DB: UPDATE token_rimanenti
-    DB-->>-DAO: nuovo saldo
-    DAO-->>-MC: saldo aggiornato
+    MC->>+MDAO: create(modelData)
+    MDAO->>+DB: INSERT modello
+    DB-->>-MDAO: modello creato
+    MDAO-->>-MC: nuovo modello
+    MC->>+UDAO: deductTokensAndGetBalance()
+    UDAO->>+DB: UPDATE token_rimanenti
+    DB-->>-UDAO: nuovo saldo
+    UDAO-->>-MC: saldo aggiornato
     MC-->>-API: {modello, costo, token_rimanenti}
     API-->>-U: 201 Created
     
-    Note over U,DB: 🎯 Fase 2: Esecuzione A*
+    Note over U,DB: Fase 2: Esecuzione A*
     
-    U->>+API: POST /api/models/:id/execute<br/>{start, goal}
+    U->>+API: POST /api/models/:id/execute
+    Note right of U: {start, goal}
     API->>+MC: executeModel()
-    MC->>+DAO: findById(modelId)
-    DAO->>+DB: SELECT modello
-    DB-->>-DAO: dati modello
-    DAO-->>-MC: modello
+    MC->>+MDAO: findById(modelId)
+    MDAO->>+DB: SELECT modello
+    DB-->>-MDAO: dati modello
+    MDAO-->>-MC: modello
     MC->>+AStar: findPath(start, goal, grid)
     AStar-->>-MC: percorso ottimale
-    MC->>+DAO: deductTokensAndGetBalance()
-    DAO->>+DB: UPDATE token_rimanenti
-    DB-->>-DAO: nuovo saldo
-    DAO-->>-MC: saldo aggiornato
+    MC->>+UDAO: deductTokensAndGetBalance()
+    UDAO->>+DB: UPDATE token_rimanenti
+    DB-->>-UDAO: nuovo saldo
+    UDAO-->>-MC: saldo aggiornato
     MC-->>-API: {percorso, costo, tempo, token}
     API-->>-U: 200 OK
 ```
@@ -279,17 +715,19 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant U1 as 🧑‍💻 Utente 1<br/>(Richiedente)
-    participant U2 as 👤 Utente 2<br/>(Creatore)
-    participant API as 🌐 API Gateway
-    participant UC as 🔄 Update Controller
-    participant RDAO as 📝 Richiesta DAO
-    participant CDAO as 🔲 Cella DAO
-    participant DB as 🗄️ Database
+    participant U1 as Utente 1 (Richiedente)
+    participant U2 as Utente 2 (Creatore)
+    participant API as API Gateway
+    participant UC as Update Controller
+    participant RDAO as Richiesta DAO
+    participant CDAO as Cella DAO
+    participant MDAO as Modello DAO
+    participant DB as Database
     
-    Note over U1,DB: 📝 Fase 1: Richiesta Aggiornamento
+    Note over U1,DB: Fase 1: Richiesta Aggiornamento
     
-    U1->>+API: POST /api/models/:id/request-update<br/>{celle: [{x,y,nuovo_valore}]}
+    U1->>+API: POST /api/models/:id/request-update
+    Note right of U1: {celle: [{x,y,nuovo_valore}]}
     API->>+UC: requestCellUpdate()
     UC->>+RDAO: create(richiestaData)
     RDAO->>+DB: INSERT richiesta_aggiornamento
@@ -302,7 +740,7 @@ sequenceDiagram
     UC-->>-API: {richiesta_id, costo_totale}
     API-->>-U1: 201 Created
     
-    Note over U1,DB: 📋 Fase 2: Visualizzazione Richieste
+    Note over U1,DB: Fase 2: Visualizzazione Richieste
     
     U2->>+API: GET /api/updates/pending
     API->>+UC: getPendingRequests()
@@ -313,24 +751,35 @@ sequenceDiagram
     UC-->>-API: {richieste, paginazione}
     API-->>-U2: 200 OK
     
-    Note over U1,DB: ✅ Fase 3: Approvazione/Rifiuto
+    Note over U1,DB: Fase 3: Approvazione/Rifiuto (Bulk Operations)
     
-    U2->>+API: PUT /api/updates/approve-reject<br/>{richieste: [{id, azione}]}
+    U2->>+API: PUT /api/updates/approve-reject
+    Note right of U2: {richieste: [{id, azione}]}
     API->>+UC: approveRejectRequests()
     
-    alt azione = 'approve'
-        UC->>+RDAO: updateStatus(id, 'approved')
-        RDAO->>+DB: UPDATE stato='approved'
-        DB-->>-RDAO: stato aggiornato
-        RDAO-->>-UC: richiesta approvata
-        UC->>+DB: UPDATE griglia modello
-        DB-->>-UC: griglia aggiornata
-    else azione = 'reject'
-        UC->>+RDAO: updateStatus(id, 'rejected')
-        RDAO->>+DB: UPDATE stato='rejected'
-        DB-->>-RDAO: stato aggiornato
-        RDAO-->>-UC: richiesta rifiutata
+    UC->>+RDAO: findMultipleByIdsWithRelations()
+    RDAO->>+DB: SELECT richieste con relazioni
+    DB-->>-RDAO: richieste con dati
+    RDAO-->>-UC: richieste complete
+    
+    UC->>+MDAO: checkMultipleOwnership()
+    MDAO->>+DB: SELECT modelli per ownership
+    DB-->>-MDAO: dati ownership
+    MDAO-->>-UC: mappa ownership
+    
+    Note over UC: Raggruppa approvazioni e rifiuti
+    
+    alt ha approvazioni
+        UC->>+MDAO: updateGrid() per ogni modello
+        MDAO->>+DB: UPDATE griglia modelli
+        DB-->>-MDAO: griglie aggiornate
+        MDAO-->>-UC: aggiornamenti completati
     end
+    
+    UC->>+RDAO: bulkUpdateStatus()
+    RDAO->>+DB: UPDATE stati in bulk
+    DB-->>-RDAO: stati aggiornati
+    RDAO-->>-UC: bulk update completato
     
     UC-->>-API: {richieste_elaborate}
     API-->>-U2: 200 OK
